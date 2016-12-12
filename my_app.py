@@ -27,18 +27,26 @@ def main_page():
 
 @app.route('/longtask', methods=['POST'])
 def do_computation():
-    task = long_task.apply_async(args=[app.vars])
-    return jsonify({}), 202, {'Location': url_for('taskstatus',
-                                                  task_id=task.id)}
+    # set num questions, could return a 400 here and send error
+    # message to client as well
+    if request.form["num_questions"] == "":
+        num_questions = 1
+    else:
+        num_questions = int(request.form["num_questions"])
+
+    app.vars['num_questions'] = num_questions
+
+    task = long_task.apply_async(args=[{'num_questions': num_questions}])
+    return jsonify({}), 202, {'Location': url_for('taskstatus', task_id=task.id)}
 
 
 @celery.task(bind=True)
-def long_task(self, app_vars):
+def long_task(self, args):
     """Background task that runs a long function with progress reports."""
     self.update_state(state='PROGRESS', meta={'state': 0})
     time.sleep(5)
     self.update_state(state='PROGRESS2', meta={'state': 1})
-    filename = '{}.txt'.format(app_vars['num_questions'])
+    filename = '{}.txt'.format(args['num_questions'])
     with open(filename, 'w') as f:
         f.write('Blah')
     time.sleep(5)

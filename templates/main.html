@@ -1,6 +1,7 @@
 <!doctype html>
 <title>A short calculation</title>
 <link rel=stylesheet type=text/css href='{{ url_for('static',filename='style_lulu.css')}}'>
+
 <div class=page>
   <h1>A short calculation</h1>
   <div class=metanav>
@@ -9,49 +10,14 @@
 Please input the number of questions you'd like to be answered.
 </h4>
 
-  <form method="POST">
-    <p>Number of questions: <input type="text" name="num_questions"></p>
+  <form method="POST" id="question-form">
+    <p>Number of questions: <input type="text" name="num_questions" id="num-questions"></p>
     <input type="submit" name="submit" value="Save inputs">
   </form>
     <button id="start-bg-job">Start Calculation</button><br><br>  
     <div id="progress"></div>
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-    <script>
-        function start_long_task() {
-            // add task status elements
-            div = $('<div class="progress"><div></div><div>...</div><div>&nbsp;</div></div><hr>');
-            $('#progress').append(div);
-
-            // send ajax POST request to start background job
-            $.ajax({
-                type: 'POST',
-                url: '/longtask',
-                success: function(data, status, request) {
-                    status_url = request.getResponseHeader('Location');
-                    update_progress(status_url, div[0]);
-                },
-                error: function() {
-                    alert('Unexpected error');
-                }
-            });
-        }
-        function update_progress(status_url, status_div) {
-            // send GET request to status URL
-            $.getJSON(status_url, function(data) {
-                // update UI
-                $(status_div.childNodes[1]).text(data['status']);
-                if (data['state'] != 2) {
-                    // rerun in 2 seconds
-                    setTimeout(function() {
-                        update_progress(status_url, status_div);
-                    }, 2000);
-                }
-            });
-        }
-        $(function() {
-            $('#start-bg-job').click(start_long_task);
-        });
-    </script>
+    <script type="text/javascript" src="{{ url_for('static',filename='main.js')}}"></script>
   </body>
 </html>
