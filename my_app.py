@@ -35,9 +35,9 @@ def cast_to_int(value, default=1):
 def do_computation():
     # set num questions, could return a 400 here and send error
     # message to client as well
+    print(request.form)
     app.vars['num_questions'] = cast_to_int(request.form['num_questions'])
     app.vars['num_answers'] = cast_to_int(request.form['num_answers'])
-    print(app.vars)
     task = long_task.apply_async(args=[app.vars])
     return jsonify({}), 202, {'Location': url_for('taskstatus', task_id=task.id)}
 
