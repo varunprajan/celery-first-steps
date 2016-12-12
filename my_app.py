@@ -21,22 +21,24 @@ def main_page():
     else:  # request was a POST
         num_questions = int(request.form['num_questions'])
         app.vars['num_questions'] = num_questions
-        print(app.vars)
         return render_template('main.html')
+
+
+def cast_to_int(value, default=1):
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        return default
 
 
 @app.route('/longtask', methods=['POST'])
 def do_computation():
     # set num questions, could return a 400 here and send error
     # message to client as well
-    if request.form["num_questions"] == "":
-        num_questions = 1
-    else:
-        num_questions = int(request.form["num_questions"])
-
-    app.vars['num_questions'] = num_questions
-
-    task = long_task.apply_async(args=[{'num_questions': num_questions}])
+    app.vars['num_questions'] = cast_to_int(request.form['num_questions'])
+    app.vars['num_answers'] = cast_to_int(request.form['num_answers'])
+    print(app.vars)
+    task = long_task.apply_async(args=[app.vars])
     return jsonify({}), 202, {'Location': url_for('taskstatus', task_id=task.id)}
 
 
@@ -46,7 +48,8 @@ def long_task(self, args):
     self.update_state(state='PROGRESS', meta={'state': 0})
     time.sleep(5)
     self.update_state(state='PROGRESS2', meta={'state': 1})
-    filename = '{}.txt'.format(args['num_questions'])
+    filename = '{}_{}.txt'.format(args['num_questions'], args['num_answers'])
+    print(filename)
     with open(filename, 'w') as f:
         f.write('Blah')
     time.sleep(5)
